@@ -50,6 +50,10 @@ END_MESSAGE_MAP()
 
 CTimeNoteDlg::CTimeNoteDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CTimeNoteDlg::IDD, pParent)
+	, m_csTitle(_T(""))
+	, m_csContent(_T(""))
+	, m_dtWriteTime(COleDateTime::GetCurrentTime())
+	, m_bCurrentTime(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -57,12 +61,17 @@ CTimeNoteDlg::CTimeNoteDlg(CWnd* pParent /*=NULL*/)
 void CTimeNoteDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_TITLE, m_csTitle);
+	DDX_Text(pDX, IDC_EDIT_CONTENT, m_csContent);
+	DDX_DateTimeCtrl(pDX, IDC_DATETIMEPICKER_WRITETIME, m_dtWriteTime);
+	DDX_Check(pDX, IDC_CHECK_CURRENT_TIME, m_bCurrentTime);
 }
 
 BEGIN_MESSAGE_MAP(CTimeNoteDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BTN_WRITE, &CTimeNoteDlg::OnBnClickedBtnWrite)
 END_MESSAGE_MAP()
 
 
@@ -98,6 +107,7 @@ BOOL CTimeNoteDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	((CButton*)GetDlgItem(IDC_CHECK_CURRENT_TIME))->SetCheck(1);//默认选种使用点击write按钮最新的时间
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -150,4 +160,69 @@ HCURSOR CTimeNoteDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+//使用控件数据关联的方式 将获取数据写入到文本中
+void CTimeNoteDlg::OnBnClickedBtnWrite()
+{
+	UpdateData(TRUE);
+	if (m_bCurrentTime)
+	{
+		m_dtWriteTime = COleDateTime::GetCurrentTime();
+	}
+	CString csTime = m_dtWriteTime.Format(_T("%Y-%m-%d %H:%M:%S"));
+	csTime = _T("Time: ") + csTime;
+	m_csContent = _T("Content: ") + m_csContent;
+	m_csTitle = _T("Title: ") + m_csTitle;
 
+	CFile FileOut = CFile(_T("TimeNote.xml"),  CFile::modeWrite|CFile::modeCreate|CFile::modeNoTruncate);
+	if (0==FileOut.GetLength())
+	{//第一次创建文件要加入Unicode标识
+		unsigned short int feffA=0xfeff;   
+		FileOut.Write(&feffA,sizeof(short int));
+	}	
+	FileOut.SeekToEnd();
+	CString csNewLine = _T("\r\n----------------------------------------\r\n");
+	FileOut.Write(csNewLine,csNewLine.GetLength()*sizeof(TCHAR));
+	FileOut.Write(csTime,csTime.GetLength()*sizeof(TCHAR));	
+	FileOut.Write(_T("\r\n"),2*sizeof(TCHAR));
+	FileOut.Write(m_csTitle,m_csTitle.GetLength()*sizeof(TCHAR));
+	FileOut.Write(_T("\r\n"),2*sizeof(TCHAR));
+	FileOut.Write(m_csContent,m_csContent.GetLength()*sizeof(TCHAR));
+	MessageBoxW(_T("Write Successfully!"));
+
+	FileOut.Close();
+}
+/*//使用获取控件文本的方式获取数据，写入到普通的文本文件中
+void CTimeNoteDlg::OnBnClickedBtnWrite()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CWnd* EditTitle = GetDlgItem(IDC_EDIT_TITLE);
+	CWnd* EditContent = GetDlgItem(IDC_EDIT_CONTENT);
+	CWnd* TimePicker = GetDlgItem(IDC_DATETIMEPICKER_WRITETIME);
+	CString csTitle, csContent, csTime;
+	EditTitle->GetWindowTextW(csTitle);
+	EditContent->GetWindowTextW(csContent);
+	TimePicker->GetWindowTextW(csTime);
+
+	csTime = _T("Time: ") + csTime;
+	csContent = _T("Content: ") + csContent;
+	csTitle = _T("Title: ") + csTitle;
+
+	CFile FileOut = CFile(_T("TimeNote.xml"),  CFile::modeWrite|CFile::modeCreate|CFile::modeNoTruncate);
+	if (0==FileOut.GetLength())
+	{//第一次创建文件要加入Unicode标识
+		unsigned short int feffA=0xfeff;   
+		FileOut.Write(&feffA,sizeof(short int));
+	}	
+	FileOut.SeekToEnd();
+	CString csNewLine = _T("\r\n----------------------------------------\r\n");
+	FileOut.Write(csNewLine,csNewLine.GetLength()*sizeof(TCHAR));
+	FileOut.Write(csTime,csTime.GetLength()*sizeof(TCHAR));	
+	FileOut.Write(_T("\r\n"),2*sizeof(TCHAR));
+	FileOut.Write(csTitle,csTitle.GetLength()*sizeof(TCHAR));
+	FileOut.Write(_T("\r\n"),2*sizeof(TCHAR));
+	FileOut.Write(csContent,csContent.GetLength()*sizeof(TCHAR));
+	MessageBoxW(_T("Write Successfully!"));
+
+	FileOut.Close();
+}
+*/

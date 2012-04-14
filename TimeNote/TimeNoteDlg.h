@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "atlcomtime.h"
 
 
 // CTimeNoteDlg 对话框
@@ -29,4 +30,14 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedBtnWrite();
+	// 信息标题，可为空
+	CString m_csTitle;
+	// 详细内容
+	CString m_csContent;
+	// 记录当前时间
+	COleDateTime m_dtWriteTime;
+	// 是否使用当前时间
+	BOOL m_bCurrentTime;
 };
