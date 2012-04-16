@@ -104,6 +104,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TimeNote.h" />
     <ClInclude Include="TimeNoteDlg.h" />
+    <ClInclude Include="XMLHandle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -112,6 +113,7 @@
     </ClCompile>
     <ClCompile Include="TimeNote.cpp" />
     <ClCompile Include="TimeNoteDlg.cpp" />
+    <ClCompile Include="XMLHandle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TimeNote.rc" />

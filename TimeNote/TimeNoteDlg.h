@@ -40,4 +40,6 @@ public:
 	COleDateTime m_dtWriteTime;
 	// 是否使用当前时间
 	BOOL m_bCurrentTime;
+	// 初始化时创建XML文件
+	void CreateXMLFile(void);
 };
